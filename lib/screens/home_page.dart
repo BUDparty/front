@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import 'chat_page.dart';
-import 'word_learning_page.dart';
-import 'progress_page.dart';
+import 'package:onsaemiro/screens/word_learning_page.dart';
 import 'library_page.dart';
+import 'progress_page.dart';
 import 'settings_page.dart';
-import 'learning_page.dart';
-import 'evaluation_page.dart';
+import '../services/api_service.dart';
+import '../models/models.dart';
+import 'chat_page.dart';
 import 'evaluation_learning_page.dart';
+import 'evaluation_page.dart';
+import 'learning_page.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -15,9 +17,16 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  Future<Chapter>? futureNextChapter;
+
+  @override
+  void initState() {
+    super.initState();
+    futureNextChapter = ApiService().fetchNextChapter();
+  }
 
   static List<Widget> _widgetOptions = <Widget>[
-    HomePageContent(),
+    HomeContent(),
     LibraryPage(),
     ProgressPage(),
     SettingsPage(),
@@ -32,6 +41,13 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: _selectedIndex == 0
+          ? AppBar(
+        title: Text('시나브로'),
+        backgroundColor: Colors.lightBlue[100],
+        elevation: 0,
+      )
+          : null,
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         items: <BottomNavigationBarItem>[
@@ -63,148 +79,155 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class HomePageContent extends StatelessWidget {
+class HomeContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('시나브로'),
-        backgroundColor: Colors.lightBlue[100],
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+    return FutureBuilder<Chapter>(
+      future: ApiService().fetchNextChapter(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Failed to load next chapter'));
+        } else if (!snapshot.hasData) {
+          return Center(child: Text('No chapter available'));
+        } else {
+          Chapter nextChapter = snapshot.data!;
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _buildStatusCard('학습한 챕터 수', '3'),
-                  _buildStatusCard('평가 점수 (100점 기준)', '75'),
-                ],
-              ),
-              SizedBox(height: 20),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => ChatPage()),
-                  );
-                },
-                child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.teal,
-                    borderRadius: BorderRadius.circular(8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildStatusCard('학습한 챕터 수', '3'),
+                      _buildStatusCard('평가 점수 (100점 기준)', '75'),
+                    ],
                   ),
-                  child: Center(
-                    child: Text(
-                      'AI와 대화하기',
-                      style: TextStyle(color: Colors.white, fontSize: 18),
+                  SizedBox(height: 20),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => ChatPage()),
+                      );
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.teal,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'AI와 대화하기',
+                          style: TextStyle(color: Colors.white, fontSize: 18),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-              SizedBox(height: 20),
-              _buildSectionTitle('학습하기'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => WordLearningPage(chapterId: 1)),
-                      );
-                    },
-                    child: _buildLearningCard('Chap 1. 기본 인사', '문장 학습하기', 'assets/images/sample1.png'),
+                  SizedBox(height: 20),
+                  _buildSectionTitle('학습하기'),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => WordLearningPage(chapterId: nextChapter.id)),
+                          );
+                        },
+                        child: _buildLearningCard(nextChapter.title, '문장 학습하기', 'assets/images/sample1.png'),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => WordLearningPage(chapterId: nextChapter.id)),
+                          );
+                        },
+                        child: _buildLearningCard(nextChapter.title, '단어 학습하기', 'assets/images/sample1.png'),
+                      ),
+                    ],
                   ),
+                  SizedBox(height: 10),
                   GestureDetector(
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => WordLearningPage(chapterId: 1)),
+                        MaterialPageRoute(builder: (context) => LearningPage()),
                       );
                     },
-                    child: _buildLearningCard('Chap 1. 기본 인사', '단어 학습하기', 'assets/images/sample1.png'),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.lightBlue,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '학습하기',
+                          style: TextStyle(color: Colors.white, fontSize: 18),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  _buildSectionTitle('평가하기'),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => EvaluationLearningPage()),
+                          );
+                        },
+                        child: _buildLearningCard('Chap 1. 기본 인사', '문장 평가하기', 'assets/images/sample1.png'),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => EvaluationLearningPage()),
+                          );
+                        },
+                        child: _buildLearningCard('Chap 1. 기본 인사', '단어 평가하기', 'assets/images/sample1.png'),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => EvaluationPage()),
+                      );
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.lightBlue,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '평가하기',
+                          style: TextStyle(color: Colors.white, fontSize: 18),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
-              SizedBox(height: 10),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => LearningPage()),
-                  );
-                },
-                child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.lightBlue,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Center(
-                    child: Text(
-                      '학습하기',
-                      style: TextStyle(color: Colors.white, fontSize: 18),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 20),
-              _buildSectionTitle('평가하기'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => EvaluationLearningPage()),
-                      );
-                    },
-                    child: _buildLearningCard('Chap 1. 기본 인사', '문장 평가하기', 'assets/images/sample1.png'),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => EvaluationLearningPage()),
-                      );
-                    },
-                    child: _buildLearningCard('Chap 1. 기본 인사', '단어 평가하기', 'assets/images/sample1.png'),
-                  ),
-                ],
-              ),
-              SizedBox(height: 10),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => EvaluationPage()),
-                  );
-                },
-                child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.lightBlue,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Center(
-                    child: Text(
-                      '평가하기',
-                      style: TextStyle(color: Colors.white, fontSize: 18),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+            ),
+          );
+        }
+      },
     );
   }
 

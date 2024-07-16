@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:onsaemiro/api_key.dart';
+
 
 void main() {
   runApp(MyApp());
@@ -27,7 +29,7 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   final TextEditingController _controller = TextEditingController();
   final List<Map<String, String>> _messages = [];
-  final String apiKey = "sk-proj-bOtVoAbqkiIn7YBQZPHRT3BlbkFJHPpKkijp3MLaxoloxcwr";
+  final String apiKey = openaiKey;
 
   @override
   void initState() {
@@ -49,7 +51,7 @@ class _ChatPageState extends State<ChatPage> {
       body: utf8.encode(jsonEncode({
         'model': 'gpt-3.5-turbo',
         'messages': [
-          {'role': 'system', 'content': 'You are a helpful assistant.'},
+          {'role': 'system', 'content': 'You are an expert in North and South Korean languages.'},
           {'role': 'user', 'content': message},
         ],
       })),

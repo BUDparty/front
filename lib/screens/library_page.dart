@@ -1,35 +1,72 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../models/models.dart';
+import '../services/api_service.dart';
 
-class LibraryPage extends StatelessWidget {
+class LibraryPage extends StatefulWidget {
+  @override
+  _LibraryPageState createState() => _LibraryPageState();
+}
+
+class _LibraryPageState extends State<LibraryPage> {
+  late Future<List<Word>> futureWords;
+  bool _showAllWords = false;
+
+  @override
+  void initState() {
+    super.initState();
+    futureWords = ApiService().fetchSavedWords();
+
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Language Learning'),
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ListView(
           children: [
-            _buildSectionTitle('Stored Vocabularies'),
-            _buildSubTitle('You can store up to 3 words'),
-            _buildVocabularyItem('감사합니다', 'Thank you'),
-            _buildVocabularyItem('여보세요', 'Hello on phone'),
-            _buildVocabularyItem('사랑해요', 'I love you'),
-            SizedBox(height: 20),
-            _buildSectionTitle('Stored Sentence Cards'),
-            _buildSentenceCard('Recent Sentences', 'Try pronouncing these sentences to improve your speaking skills.'),
-            _buildSentenceCard('Recent Sentences', 'Try pronouncing these sentences to improve your speaking skills.'),
-            _buildSentenceCard('Recent Sentences', 'Try pronouncing these sentences to improve your speaking skills.'),
-            SizedBox(height: 20),
-            _buildSectionTitle('Stored Sentence Cards'),
-            _buildSentenceCard('Recent Sentences', 'Try pronouncing these sentences to improve your speaking skills.'),
-            _buildSentenceCard('Recent Sentences', 'Try pronouncing these sentences to improve your speaking skills.'),
-            _buildSentenceCard('Recent Sentences', 'Try pronouncing these sentences to improve your speaking skills.'),
+            _buildSectionTitle('저장된 단어'),
+            FutureBuilder<List<Word>>(
+              future: futureWords,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Failed to load words'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(child: Text('No words available'));
+                } else {
+                  List<Word> words = snapshot.data!;
+                  return Column(
+                    children: [
+                      for (int i = 0; i < (_showAllWords ? words.length : 3); i++)
+                        Card(
+                          child: ListTile(
+                            leading: Image.asset('assets/images/sample1.png', width: 50, height: 50, fit: BoxFit.cover),
+                            title: Text(words[i].koreanWord),
+                            subtitle: Text(words[i].northKoreanWord),
+                          ),
+                        ),
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            _showAllWords = !_showAllWords;
+                          });
+                        },
+                        child: Text(_showAllWords ? '간략히 보기' : '모두 보기'),
+                      ),
+                    ],
+                  );
+                }
+              },
+            ),
+
           ],
         ),
       ),
+      backgroundColor: Color(0xFFF0DEF3),
     );
   }
 
@@ -39,72 +76,6 @@ class LibraryPage extends StatelessWidget {
       child: Text(
         title,
         style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-
-  Widget _buildSubTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Text(
-        title,
-        style: TextStyle(fontSize: 16, color: Colors.grey),
-      ),
-    );
-  }
-
-  Widget _buildVocabularyItem(String word, String meaning) {
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: Colors.grey[200],
-        child: Text('abc', style: TextStyle(color: Colors.black)),
-      ),
-      title: Text('Word: $word'),
-      subtitle: Text('Meaning: $meaning'),
-    );
-  }
-
-  Widget _buildSentenceCard(String title, String description) {
-    return Card(
-      child: ListTile(
-        leading: Container(
-          width: 50,
-          height: 50,
-          color: Colors.grey[200],
-          child: Center(
-            child: Text('Image', style: TextStyle(color: Colors.black)),
-          ),
-        ),
-        title: Text(title),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                _buildTag('Speaking'),
-                SizedBox(width: 5),
-                _buildTag('Accent'),
-              ],
-            ),
-            SizedBox(height: 5),
-            Text(description),
-          ],
-        ),
-        isThreeLine: true,
-      ),
-    );
-  }
-
-  Widget _buildTag(String tag) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: Colors.grey[300],
-      ),
-      child: Text(
-        tag,
-        style: TextStyle(fontSize: 12),
       ),
     );
   }

@@ -11,6 +11,7 @@ class Chapter {
     );
   }
 }
+
 class Word {
   final int id;
   final int chapterId;

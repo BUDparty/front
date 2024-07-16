@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
 import 'package:http/http.dart' as http;
+import 'learning_page.dart';
 
 class WordLearningPage extends StatefulWidget {
   final int chapterId;
@@ -36,6 +37,14 @@ class _WordLearningPageState extends State<WordLearningPage> {
       });
     } else {
       throw Exception('Failed to save word');
+    }
+  }
+
+  Future<void> _markWordAsCalled(int wordId) async {
+    final response = await http.post(Uri.parse('http://127.0.0.1:8000/api/words/$wordId/mark_called/'));
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to mark word as called');
     }
   }
 
@@ -122,7 +131,8 @@ class _WordLearningPageState extends State<WordLearningPage> {
                       SizedBox(height: 10),
                       if (currentIndex < words.length - 1)
                         ElevatedButton(
-                          onPressed: () {
+                          onPressed: () async {
+                            await _markWordAsCalled(currentWord.id);
                             setState(() {
                               currentIndex++;
                             });
@@ -132,6 +142,18 @@ class _WordLearningPageState extends State<WordLearningPage> {
                             foregroundColor: Colors.black, backgroundColor: Colors.white,
                             minimumSize: Size(double.infinity, 50),
                             side: BorderSide(color: Colors.black),
+                          ),
+                        ),
+                      if (currentIndex == words.length - 1)
+                        ElevatedButton(
+                          onPressed: () async {
+                            await _markWordAsCalled(currentWord.id);
+                            Navigator.pop(context);
+                          },
+                          child: Text('완료'),
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white, backgroundColor: Colors.black,
+                            minimumSize: Size(double.infinity, 50),
                           ),
                         ),
                       SizedBox(height: 10),
