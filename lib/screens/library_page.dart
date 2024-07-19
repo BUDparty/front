@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import '../models/models.dart';
 import '../services/api_service.dart';
 
@@ -17,7 +15,6 @@ class _LibraryPageState extends State<LibraryPage> {
   void initState() {
     super.initState();
     futureWords = ApiService().fetchSavedWords();
-
   }
 
   @override
@@ -41,7 +38,7 @@ class _LibraryPageState extends State<LibraryPage> {
                   List<Word> words = snapshot.data!;
                   return Column(
                     children: [
-                      for (int i = 0; i < (_showAllWords ? words.length : 3); i++)
+                      for (int i = 0; i < (_showAllWords ? words.length : (words.length > 3 ? 3 : words.length)); i++)
                         Card(
                           child: ListTile(
                             leading: Image.asset('assets/images/sample1.png', width: 50, height: 50, fit: BoxFit.cover),
@@ -62,7 +59,6 @@ class _LibraryPageState extends State<LibraryPage> {
                 }
               },
             ),
-
           ],
         ),
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:onsaemiro/screens/word_learning_page.dart';
+import 'sentence_learning_page.dart';
 import 'library_page.dart';
 import 'progress_page.dart';
 import 'settings_page.dart';
@@ -137,7 +138,7 @@ class HomeContent extends StatelessWidget {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => WordLearningPage(chapterId: nextChapter.id)),
+                            MaterialPageRoute(builder: (context) => SentenceLearningPage(chapterId: nextChapter.id)),
                           );
                         },
                         child: _buildLearningCard(nextChapter.title, '문장 학습하기', 'assets/images/sample1.png'),
@@ -184,7 +185,7 @@ class HomeContent extends StatelessWidget {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => EvaluationLearningPage()),
+                            MaterialPageRoute(builder: (context) => EvaluationLearningPage(chapterId: nextChapter.id)),
                           );
                         },
                         child: _buildLearningCard('Chap 1. 기본 인사', '문장 평가하기', 'assets/images/sample1.png'),
@@ -193,7 +194,7 @@ class HomeContent extends StatelessWidget {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => EvaluationLearningPage()),
+                            MaterialPageRoute(builder: (context) => EvaluationLearningPage(chapterId: nextChapter.id)),
                           );
                         },
                         child: _buildLearningCard('Chap 1. 기본 인사', '단어 평가하기', 'assets/images/sample1.png'),

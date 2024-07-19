@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
 import 'word_learning_page.dart';
+import 'sentence_learning_page.dart';
+import 'evaluation_sentence_page.dart'; // Add this line
 
 class LearningPage extends StatefulWidget {
   @override
@@ -53,7 +55,7 @@ class _LearningPageState extends State<LearningPage> {
                     children: [
                       Text('챕터 ${chapter.id} : ${chapter.title}', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       SizedBox(height: 4),
-                      Text('한국 사람들과 기본 인사를 하는 방법을 배워봅시다.', style: TextStyle(fontSize: 14, color: Colors.grey)),
+                      Text('한국의 ${chapter.title}에 대해 배워봅시다.', style: TextStyle(fontSize: 14, color: Colors.grey)),
                       SizedBox(height: 8),
                       Card(
                         child: ListTile(
@@ -78,7 +80,7 @@ class _LearningPageState extends State<LearningPage> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => WordLearningPage(chapterId: chapter.id)),
+                              MaterialPageRoute(builder: (context) => SentenceLearningPage(chapterId: chapter.id)),
                             );
                           },
                         ),
@@ -86,13 +88,13 @@ class _LearningPageState extends State<LearningPage> {
                       Card(
                         child: ListTile(
                           leading: Image.asset(imageAsset, width: 50, height: 50),
-                          title: Text('유닛 3. 억양 학습하기'),
+                          title: Text('유닛 3. 문장 평가하기'),
                           subtitle: Text('${chapter.title}  기본'),
                           trailing: Icon(Icons.arrow_forward_ios),
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => WordLearningPage(chapterId: chapter.id)),
+                              MaterialPageRoute(builder: (context) => EvaluationSentencePage(chapterId: chapter.id)),
                             );
                           },
                         ),

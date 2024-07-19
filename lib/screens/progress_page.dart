@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import '../models/models.dart';
 import '../services/api_service.dart';
+import 'evaluation_learning_result_page.dart';
+import 'learning_result_page.dart';
 
 class ProgressPage extends StatefulWidget {
   @override
@@ -13,6 +16,82 @@ class _ProgressPageState extends State<ProgressPage> {
   void initState() {
     super.initState();
     futureProgressData = ApiService().fetchProgressData();
+  }
+
+  void _showEvaluationResult(int chapterId) async {
+    try {
+      final words = await ApiService().fetchWords(chapterId);
+      final sentences = await ApiService().fetchSentences(chapterId);
+      final progress = (words.where((word) => word.isCollect).length +
+          sentences.where((sentence) => sentence.isCollect).length) /
+          (words.length + sentences.length) *
+          100;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => EvaluationLearningResultPage(
+            progress: progress,
+            words: words,
+            sentences: sentences,
+            chapterId: chapterId,
+          ),
+        ),
+      );
+    } catch (e) {
+      print('Error loading evaluation result: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load evaluation result')),
+      );
+    }
+  }
+
+  void _showLearningResult(int chapterId) async {
+    try {
+      final words = await ApiService().fetchWords(chapterId);
+      final sentences = await ApiService().fetchSentences(chapterId);
+      final progress = (words.where((word) => word.isCalled).length +
+          sentences.where((sentence) => sentence.isCalled).length) /
+          (words.length + sentences.length) *
+          100;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => LearningResultPage(
+            progress: progress,
+            words: words,
+            sentences: sentences,
+            chapterId: chapterId,
+          ),
+        ),
+      );
+    } catch (e) {
+      print('Error loading learning result: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load learning result')),
+      );
+    }
+  }
+
+  Future<double> _calculateLearningProgress(int chapterId) async {
+    final words = await ApiService().fetchWords(chapterId);
+    final sentences = await ApiService().fetchSentences(chapterId);
+    final progress = (words.where((word) => word.isCalled).length +
+        sentences.where((sentence) => sentence.isCalled).length) /
+        (words.length + sentences.length) *
+        100;
+    return progress;
+  }
+
+  Future<double> _calculateEvaluationProgress(int chapterId) async {
+    final words = await ApiService().fetchWords(chapterId);
+    final sentences = await ApiService().fetchSentences(chapterId);
+    final progress = (words.where((word) => word.isCollect).length +
+        sentences.where((sentence) => sentence.isCollect).length) /
+        (words.length + sentences.length) *
+        100;
+    return progress;
   }
 
   @override
@@ -29,7 +108,7 @@ class _ProgressPageState extends State<ProgressPage> {
             return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Failed to load progress data'));
-          } else if (!snapshot.hasData) {
+          } else if (!snapshot.hasData || snapshot.data!.progressData.isEmpty) {
             return Center(child: Text('No progress data available'));
           } else {
             ProgressData progressData = snapshot.data!;
@@ -133,25 +212,24 @@ class _ProgressPageState extends State<ProgressPage> {
                       ),
                       SizedBox(height: 8.0),
                       for (var chapter in progressData.progressData)
-                        Card(
-                          child: ListTile(
-                            leading: Icon(
-                              Icons.book,
-                              color: chapter.progress >= 75 ? Colors.green : Colors.red,
-                            ),
-                            title: Text(chapter.chapterTitle),
-                            subtitle: Text('${chapter.progress.toStringAsFixed(0)}% 완료했어요!'),
-                          ),
+                        FutureBuilder<double>(
+                          future: _calculateLearningProgress(chapter.chapterId),
+                          builder: (context, snapshot) {
+                            double progress = snapshot.data ?? 0;
+                            return Card(
+                              child: ListTile(
+                                leading: Icon(
+                                  Icons.book,
+                                  color: progress >= 75 ? Colors.green : Colors.red,
+                                ),
+                                title: Text(chapter.chapterTitle),
+                                subtitle: Text('${progress.toStringAsFixed(0)}% 완료했어요!'),
+                                onTap: () => _showLearningResult(chapter.chapterId),
+                              ),
+                            );
+                          },
                         ),
                       SizedBox(height: 8.0),
-                      ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white, backgroundColor: Color(0xFF9714AF),
-                        ),
-                        child: Text('평가하기'),
-                      ),
-                      SizedBox(height: 16.0),
                       Text(
                         '평가하기',
                         style: TextStyle(
@@ -162,24 +240,24 @@ class _ProgressPageState extends State<ProgressPage> {
                       ),
                       SizedBox(height: 8.0),
                       for (var chapter in progressData.progressData)
-                        Card(
-                          child: ListTile(
-                            leading: Icon(
-                              Icons.book,
-                              color: chapter.progress >= 75 ? Colors.green : Colors.red,
-                            ),
-                            title: Text(chapter.chapterTitle),
-                            subtitle: Text('${chapter.progress.toStringAsFixed(0)}% 완료했어요!'),
-                          ),
+                        FutureBuilder<double>(
+                          future: _calculateEvaluationProgress(chapter.chapterId),
+                          builder: (context, snapshot) {
+                            double progress = snapshot.data ?? 0;
+                            return Card(
+                              child: ListTile(
+                                leading: Icon(
+                                  Icons.book,
+                                  color: progress >= 75 ? Colors.green : Colors.red,
+                                ),
+                                title: Text(chapter.chapterTitle),
+                                subtitle: Text('${progress.toStringAsFixed(0)}% 완료했어요!'),
+                                onTap: () => _showEvaluationResult(chapter.chapterId),
+                              ),
+                            );
+                          },
                         ),
                       SizedBox(height: 8.0),
-                      ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white, backgroundColor: Color(0xFF9714AF),
-                        ),
-                        child: Text('평가하기'),
-                      ),
                     ],
                   ),
                 ),
@@ -189,56 +267,6 @@ class _ProgressPageState extends State<ProgressPage> {
         },
       ),
       backgroundColor: Color(0xFFF0DEF3),
-    );
-  }
-}
-
-class ProgressData {
-  final List<ChapterProgress> progressData;
-  final int completedChapters;
-  final double overallProgress;
-
-  ProgressData({
-    required this.progressData,
-    required this.completedChapters,
-    required this.overallProgress,
-  });
-
-  factory ProgressData.fromJson(Map<String, dynamic> json) {
-    var list = json['progress_data'] as List;
-    List<ChapterProgress> progressList =
-    list.map((i) => ChapterProgress.fromJson(i)).toList();
-
-    return ProgressData(
-      progressData: progressList,
-      completedChapters: json['completed_chapters'],
-      overallProgress: json['overall_progress'],
-    );
-  }
-}
-
-class ChapterProgress {
-  final int chapterId;
-  final String chapterTitle;
-  final double progress;
-  final int totalWords;
-  final int calledWords;
-
-  ChapterProgress({
-    required this.chapterId,
-    required this.chapterTitle,
-    required this.progress,
-    required this.totalWords,
-    required this.calledWords,
-  });
-
-  factory ChapterProgress.fromJson(Map<String, dynamic> json) {
-    return ChapterProgress(
-      chapterId: json['chapter_id'],
-      chapterTitle: json['chapter_title'],
-      progress: json['progress'],
-      totalWords: json['total_words'],
-      calledWords: json['called_words'],
     );
   }
 }

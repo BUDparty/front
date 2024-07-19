@@ -30,10 +30,15 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  permission_handler: ^10.0.0
+  googleapis: ^9.0.0
+  googleapis_auth: ^1.0.0
   http: ^0.13.3
-  flutter_tts: ^3.3.4
-  provider: ^6.0.0
+  provider: ^5.0.0
+  audioplayers: ^0.20.1
+  path_provider: ^2.0.7
   flutter_dotenv: ^5.0.2
+  animated_text_kit: ^4.2.1
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -66,6 +71,65 @@ flutter:
     - assets/images/hi.png
     - assets/images/exercising.png
     - assets/images/food.png
+    - assets/service_account.json
+    - assets/images/골키퍼.png
+    - assets/images/꽁치.png
+    - assets/images/넣다.png
+    - assets/images/네트.png
+    - assets/images/네트오버.png
+    - assets/images/녹말가루.png
+    - assets/images/누르다.png
+    - assets/images/달걀.png
+    - assets/images/덧놓은음식.png
+    - assets/images/따뜻하게.png
+    - assets/images/라면.png
+    - assets/images/면발,사리.png
+    - assets/images/리듬체조.png
+    - assets/images/리본체조.png
+    - assets/images/링운동.png
+    - assets/images/매스게임.png
+    - assets/images/멧돌.png
+    - assets/images/미드필더.png
+    - assets/images/반죽하다.png
+    - assets/images/별미.png
+    - assets/images/볶다.png
+    - assets/images/부패하다.png
+    - assets/images/불리다.png
+    - assets/images/상추.png
+    - assets/images/새해복 많이 받으세요.png
+    - assets/images/생신을 축하드립니다.png
+    - assets/images/설탕.png
+    - assets/images/수영복.png
+    - assets/images/슛.png
+    - assets/images/스파이크.png
+    - assets/images/습기.png
+    - assets/images/아이스하키.png
+    - assets/images/안녕하세요.png
+    - assets/images/안녕하십니까.png
+    - assets/images/알맞게.png
+    - assets/images/야간경기.png
+    - assets/images/야채.png
+    - assets/images/양배추.png
+    - assets/images/양파.png
+    - assets/images/얼리다.png
+    - assets/images/얼큰하다.png
+    - assets/images/없애다.png
+    - assets/images/여보세요.png
+    - assets/images/연하고.png
+    - assets/images/운동화.png
+    - assets/images/재료.png
+    - assets/images/전화 끊습니다.png
+    - assets/images/절이다.png
+    - assets/images/점프볼.png
+    - assets/images/조미료.png
+    - assets/images/코너킥.png
+    - assets/images/패널티킥.png
+    - assets/images/풀물.png
+    - assets/images/프리킥.png
+    - assets/images/헤딩슛.png
+    - assets/images/홀딩.png
+    - assets/images/후라이팬.png
+    - assets/images/훌라후프.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

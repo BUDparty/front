@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'screens/home_page.dart';
 import 'screens/chat_page.dart';
 import 'screens/word_learning_page.dart';
@@ -15,6 +18,8 @@ import 'settings_provider.dart';
 
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
   runApp(
     ChangeNotifierProvider(
       create: (context) => SettingsProvider(),
