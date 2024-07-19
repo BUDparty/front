@@ -115,18 +115,17 @@ class ApiService {
 
 
   // 문장의 is_collect 값 업데이트하기
-  Future<void> updateSentenceIsCollect(int sentenceId, bool isCollect) async {
+  Future<void> updateSentenceIsCollect(int sentenceId, bool isCorrect, bool isCollect) async {
     final response = await http.patch(
-      Uri.parse('${baseUrl}/sentences/$sentenceId/update/'),
-      headers: {"Content-Type": "application/json; charset=UTF-8"},
-      body: jsonEncode({'is_collect': isCollect ? 1 : 0}),
+      Uri.parse('http://127.0.0.1:8000/api/sentences/$sentenceId/update/'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'is_correct': isCorrect, 'is_collect': isCollect}),
     );
 
     if (response.statusCode != 200) {
-      throw Exception('Failed to update sentence is_collect');
+      throw Exception('Failed to update sentence');
     }
   }
-
 
 
   // 저장된 문장 가져오기

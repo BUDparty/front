@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:googleapis/texttospeech/v1.dart' as tts;
+import 'package:onsaemiro/screens/sentence_learning_result_page.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -146,10 +147,9 @@ class _SentenceLearningPageState extends State<SentenceLearningPage> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => EvaluationLearningResultPage(
+        builder: (context) => SentenceLearningResultPage(
           progress: progress,
           sentences: updatedSentences,
-          words: [],
           chapterId: widget.chapterId,
         ),
       ),

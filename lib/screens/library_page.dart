@@ -9,12 +9,15 @@ class LibraryPage extends StatefulWidget {
 
 class _LibraryPageState extends State<LibraryPage> {
   late Future<List<Word>> futureWords;
+  late Future<List<AppSentence>> futureSentences;
   bool _showAllWords = false;
+  bool _showAllSentences = false;
 
   @override
   void initState() {
     super.initState();
     futureWords = ApiService().fetchSavedWords();
+    futureSentences = ApiService().fetchSavedSentences();
   }
 
   @override
@@ -53,6 +56,41 @@ class _LibraryPageState extends State<LibraryPage> {
                           });
                         },
                         child: Text(_showAllWords ? '간략히 보기' : '모두 보기'),
+                      ),
+                    ],
+                  );
+                }
+              },
+            ),
+            _buildSectionTitle('저장된 문장'),
+            FutureBuilder<List<AppSentence>>(
+              future: futureSentences,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Failed to load sentences'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(child: Text('No sentences available'));
+                } else {
+                  List<AppSentence> sentences = snapshot.data!;
+                  return Column(
+                    children: [
+                      for (int i = 0; i < (_showAllSentences ? sentences.length : (sentences.length > 3 ? 3 : sentences.length)); i++)
+                        Card(
+                          child: ListTile(
+                            leading: Image.asset('assets/images/sample2.png', width: 50, height: 50, fit: BoxFit.cover),
+                            title: Text(sentences[i].koreanSentence),
+                            subtitle: Text(sentences[i].northKoreanSentence),
+                          ),
+                        ),
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            _showAllSentences = !_showAllSentences;
+                          });
+                        },
+                        child: Text(_showAllSentences ? '간략히 보기' : '모두 보기'),
                       ),
                     ],
                   );

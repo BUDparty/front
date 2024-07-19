@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:onsaemiro/screens/word_learning_page.dart';
+import 'evaluation_learning_page.dart';
 import 'sentence_learning_page.dart';
 import 'library_page.dart';
 import 'progress_page.dart';
@@ -7,7 +8,8 @@ import 'settings_page.dart';
 import '../services/api_service.dart';
 import '../models/models.dart';
 import 'chat_page.dart';
-import 'evaluation_learning_page.dart';
+import 'evaluation_sentence_page.dart'; // 문장 평가하기 페이지
+import 'evaluation_learning_result_page.dart';
 import 'evaluation_page.dart';
 import 'learning_page.dart';
 
@@ -138,19 +140,25 @@ class HomeContent extends StatelessWidget {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => SentenceLearningPage(chapterId: nextChapter.id)),
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    SentenceLearningPage(chapterId: nextChapter.id)),
                           );
                         },
-                        child: _buildLearningCard(nextChapter.title, '문장 학습하기', 'assets/images/sample1.png'),
+                        child: _buildLearningCard(nextChapter.title, '문장 학습하기',
+                            'assets/images/sample1.png'),
                       ),
                       GestureDetector(
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => WordLearningPage(chapterId: nextChapter.id)),
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    WordLearningPage(chapterId: nextChapter.id)),
                           );
                         },
-                        child: _buildLearningCard(nextChapter.title, '단어 학습하기', 'assets/images/sample1.png'),
+                        child: _buildLearningCard(nextChapter.title, '단어 학습하기',
+                            'assets/images/sample1.png'),
                       ),
                     ],
                   ),
@@ -185,19 +193,25 @@ class HomeContent extends StatelessWidget {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => EvaluationLearningPage(chapterId: nextChapter.id)),
+                            MaterialPageRoute(
+                                builder: (context) => EvaluationSentencePage(
+                                    chapterId: nextChapter.id)),
                           );
                         },
-                        child: _buildLearningCard('Chap 1. 기본 인사', '문장 평가하기', 'assets/images/sample1.png'),
+                        child: _buildLearningCard(nextChapter.title, '문장 평가하기',
+                            'assets/images/sample1.png'),
                       ),
                       GestureDetector(
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => EvaluationLearningPage(chapterId: nextChapter.id)),
+                            MaterialPageRoute(
+                                builder: (context) => EvaluationLearningPage(
+                                    chapterId: nextChapter.id)),
                           );
                         },
-                        child: _buildLearningCard('Chap 1. 기본 인사', '단어 평가하기', 'assets/images/sample1.png'),
+                        child: _buildLearningCard(nextChapter.title, '단어 평가하기',
+                            'assets/images/sample1.png'),
                       ),
                     ],
                   ),
@@ -241,7 +255,8 @@ class HomeContent extends StatelessWidget {
           children: [
             Text(title, style: TextStyle(fontSize: 16)),
             SizedBox(height: 8),
-            Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            Text(value,
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
@@ -271,7 +286,9 @@ class HomeContent extends StatelessWidget {
                 children: [
                   Text(chapter, style: TextStyle(fontSize: 14)),
                   SizedBox(height: 4),
-                  Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(title,
+                      style:
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),

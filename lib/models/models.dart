@@ -122,9 +122,9 @@ class AppSentence {
       chapterId: json['chapter'],
       koreanSentence: json['korean_sentence'],
       northKoreanSentence: json['north_korean_sentence'],
-      isCalled: json['is_called'],
-      isCorrect: json['is_correct'],
-      isCollect: json['is_collect'],
+      isCalled: json['is_called'] ?? false,
+      isCorrect: json['is_correct'] ?? false,
+      isCollect: json['is_collect'] ?? false,
     );
   }
 

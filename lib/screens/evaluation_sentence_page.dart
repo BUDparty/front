@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../services/api_service.dart';
 import '../models/models.dart';
-import 'evaluation_result_page.dart';
+import 'evaluation_learning_result_page.dart';
 
 class EvaluationSentencePage extends StatefulWidget {
   final int chapterId;
@@ -51,22 +51,14 @@ class _EvaluationSentencePageState extends State<EvaluationSentencePage> {
   }
 
   Future<void> _updateSentenceIsCollect(int sentenceId, bool isCorrect, bool isCollect) async {
-    final response = await http.post(
-      Uri.parse('http://127.0.0.1:8000/api/sentence/$sentenceId/update/'),
+    final response = await http.patch(
+      Uri.parse('http://127.0.0.1:8000/api/sentences/$sentenceId/update/'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'is_correct': isCorrect, 'is_collect': isCollect}),
     );
 
-    if (response.statusCode == 200) {
-      setState(() {
-        futureSentence = futureSentence.then((sentence) {
-          sentence[currentIndex].isCorrect = isCorrect;
-          sentence[currentIndex].isCollect = isCollect;
-          return sentence;
-        });
-      });
-    } else {
-      throw Exception('Failed to save word');
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update sentence');
     }
   }
 
@@ -77,17 +69,14 @@ class _EvaluationSentencePageState extends State<EvaluationSentencePage> {
         showPopup = false;
       });
     } else {
-      // 마지막 단어일 때만 결과 페이지로 이동
       final chapterId = widget.chapterId;
 
-      // 모든 단어의 is_called를 true로 업데이트
       for (var sentence in sentence) {
         if (!sentence.isCalled) {
           await ApiService().updateSentenceIsCalled(sentence.id);
         }
       }
 
-      // 업데이트된 단어 리스트 다시 불러오기
       final updatedSentences = await ApiService().fetchSentences(chapterId);
       final progress = updatedSentences.where((sentence) => sentence.isCalled).length / updatedSentences.length * 100;
 
@@ -97,6 +86,7 @@ class _EvaluationSentencePageState extends State<EvaluationSentencePage> {
           builder: (context) => EvaluationLearningResultPage(
             progress: progress,
             sentences: updatedSentences,
+            words: [],
             chapterId: chapterId,
           ),
         ),
@@ -108,7 +98,7 @@ class _EvaluationSentencePageState extends State<EvaluationSentencePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('단어 평가하기'),
+        title: Text('문장 평가하기'),
       ),
       body: FutureBuilder<List<AppSentence>>(
         future: futureSentence,
@@ -116,9 +106,9 @@ class _EvaluationSentencePageState extends State<EvaluationSentencePage> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text('Failed to load words'));
+            return Center(child: Text('Failed to load sentences'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('No words available'));
+            return Center(child: Text('No sentences available'));
           } else {
             List<AppSentence> sentences = snapshot.data!;
             AppSentence currentSentence = sentences[currentIndex];
