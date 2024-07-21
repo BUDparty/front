@@ -4,38 +4,52 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:googleapis/texttospeech/v1.dart' as tts;
-import 'package:onsaemiro/screens/sentence_learning_result_page.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:permission_handler/permission_handler.dart';
 import '../services/api_service.dart';
 import '../models/models.dart';
-import 'evaluation_learning_result_page.dart';
+import 'rouge_l.dart';
+import 'accent_learning_result_page.dart'; // 새로운 페이지 파일을 임포트합니다.
 
-class SentenceLearningPage extends StatefulWidget {
+class AccentLearningPage extends StatefulWidget {
   final int chapterId;
 
-  SentenceLearningPage({required this.chapterId});
+  AccentLearningPage({required this.chapterId});
 
   @override
-  _SentenceLearningPageState createState() => _SentenceLearningPageState();
+  _AccentLearningPageState createState() => _AccentLearningPageState();
 }
 
-class _SentenceLearningPageState extends State<SentenceLearningPage> {
-  late Future<List<AppSentence>> futureSentences; // 문장을 받아오기 위한 Future
-  late Future<Chapter> futureChapter; // 챕터를 받아오기 위한 Future
-  int currentIndex = 0; // 현재 문장의 인덱스
-  late AudioPlayer audioPlayer; // 오디오 플레이어
-  bool isPlaying = false; // 오디오 재생 상태
-  int playCount = 0; // 오디오 재생 횟수
+class _AccentLearningPageState extends State<AccentLearningPage> {
+  late Future<List<AppSentence>> futureSentences;
+  late Future<Chapter> futureChapter;
+  int currentIndex = 0;
+  late AudioPlayer audioPlayer;
+  late stt.SpeechToText _speech;
+  bool isListening = false;
+  bool isPlaying = false;
+  String recognizedText = '';
+  int playCount = 0;
 
   @override
   void initState() {
     super.initState();
-    futureSentences = ApiService().fetchSentences(widget.chapterId); // 챕터 ID로 문장 목록을 받아옴
-    futureChapter = ApiService().fetchChapter(widget.chapterId); // 챕터 ID로 챕터 정보를 받아옴
-    audioPlayer = AudioPlayer(); // 오디오 플레이어 초기화
+    futureSentences = ApiService().fetchSentences(widget.chapterId);
+    futureChapter = ApiService().fetchChapter(widget.chapterId);
+    audioPlayer = AudioPlayer();
+    _speech = stt.SpeechToText();
+  }
+
+  Future<void> _checkPermissions() async {
+    if (await Permission.microphone.request().isGranted) {
+      print('Microphone permission granted');
+    } else {
+      print('Microphone permission denied');
+    }
   }
 
   Future<AutoRefreshingAuthClient> _getAuthClient() async {
@@ -79,7 +93,7 @@ class _SentenceLearningPageState extends State<SentenceLearningPage> {
   }
 
   Future<void> _playAudioFile(String filePath) async {
-    await audioPlayer.play(DeviceFileSource(filePath)); // No need to check result
+    await audioPlayer.play(DeviceFileSource(filePath)); // 반환값을 확인할 필요 없음
 
     audioPlayer.onPlayerComplete.listen((event) async {
       playCount++;
@@ -93,6 +107,7 @@ class _SentenceLearningPageState extends State<SentenceLearningPage> {
       }
     });
   }
+
   Future<void> _stopTextToSpeech() async {
     await audioPlayer.stop();
     setState(() {
@@ -101,7 +116,7 @@ class _SentenceLearningPageState extends State<SentenceLearningPage> {
   }
 
   Future<void> _saveSentence(int sentenceId) async {
-    final response = await http.post(Uri.parse('http://127.0.0.1:8000/api/sentences/$sentenceId/save/'));
+    final response = await http.post(Uri.parse('http://10.0.2.2:8000/api/sentences/$sentenceId/save/'));
 
     if (response.statusCode == 200) {
       setState(() {
@@ -143,7 +158,7 @@ class _SentenceLearningPageState extends State<SentenceLearningPage> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => SentenceLearningResultPage(
+        builder: (context) => AccentLearningResultPage(
           progress: progress,
           sentences: updatedSentences,
           chapterId: widget.chapterId,
@@ -152,12 +167,103 @@ class _SentenceLearningPageState extends State<SentenceLearningPage> {
     );
   }
 
+  void _startListening() async {
+    await _checkPermissions(); // 권한 확인
+
+    bool available = await _speech.initialize(
+      onStatus: (val) {
+        print('onStatus: $val');
+        setState(() {
+          if (val == 'done' || val == 'notListening') {
+            isListening = false;
+          }
+        });
+      },
+      onError: (val) {
+        print('onError: $val');
+        setState(() {
+          isListening = false;
+        });
+      },
+    );
+    if (available) {
+      setState(() => isListening = true);
+      _speech.listen(
+        onResult: (val) {
+          print('onResult: ${val.recognizedWords}');
+          setState(() {
+            recognizedText = val.recognizedWords;
+            _evaluateSpeech();
+          });
+        },
+        listenFor: Duration(seconds: 5),
+        pauseFor: Duration(seconds: 3),
+        partialResults: false,
+        localeId: 'ko_KR',
+        onSoundLevelChange: (level) {
+          print('Sound level: $level');
+        },
+      );
+    } else {
+      setState(() => isListening = false);
+      _speech.stop();
+    }
+  }
+
+  void _stopListening() {
+    if (!isListening) return; // 이미 listening 상태가 아니면 return
+    setState(() => isListening = false);
+    _speech.stop();
+  }
+
+  void _evaluateSpeech() {
+    futureSentences.then((sentences) {
+      final referenceText = sentences[currentIndex].koreanSentence;
+      final result = calculateRougeL(referenceText, recognizedText);
+      final score = result['f1Score']!;
+      final precision = result['precision']!;
+      final recall = result['recall']!;
+      _showEvaluationPopup(score, precision, recall);
+    });
+  }
+
+  void _showEvaluationPopup(double score, double precision, double recall) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+      return AlertDialog(
+          title: Text('평가 결과'),
+    content: Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+    Text('억양 정확도: ${(score * 100).toStringAsFixed(2)}%'),
+    SizedBox(height: 10),
+    Text('Precision: ${(precision * 100).toStringAsFixed(2)}%'),
+    SizedBox(height: 10),
+    Text('Recall: ${(recall * 100).toStringAsFixed(2)}%'),
+    SizedBox(height: 10),
+    Text('인식된 내용: $recognizedText'),
+    ],
+    ),
+        actions: <Widget>[
+          TextButton(
+            child: Text('닫기'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+        },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFDFF3FA),
       appBar: AppBar(
-        title: Text('Sentence Learning'),
+        title: Text('Accent Learning'),
       ),
       body: FutureBuilder<List<AppSentence>>(
         future: futureSentences,
@@ -294,29 +400,24 @@ class _SentenceLearningPageState extends State<SentenceLearningPage> {
                                     minimumSize: Size(double.infinity, 50),
                                   ),
                                 ),
+                                SizedBox(height: 10),
+                                ElevatedButton(
+                                  onPressed: () => isListening ? _stopListening() : _startListening(),
+                                  child: Text(isListening ? '듣기 중지하기' : '직접 말하기', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.black,
+                                    minimumSize: Size(double.infinity, 50),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
                         ],
                       ),
-                      if (isPlaying)
+                      if (isListening)
                         Column(
                           children: [
                             Spacer(),
-                            Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: ElevatedButton(
-                                onPressed: _stopTextToSpeech,
-                                child: Text('듣기 중지하기', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.black,
-                                  minimumSize: Size(double.infinity, 50),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                              ),
-                            ),
                             Container(
                               height: MediaQuery.of(context).size.height / 3,
                               decoration: BoxDecoration(
@@ -330,7 +431,7 @@ class _SentenceLearningPageState extends State<SentenceLearningPage> {
                                 child: AnimatedTextKit(
                                   animatedTexts: [
                                     WavyAnimatedText(
-                                      '음성을 듣고 있어요!',
+                                      '말하는 중...',
                                       textStyle: TextStyle(
                                         fontSize: 24,
                                         color: Colors.white,

@@ -80,15 +80,11 @@ class _WordLearningPageState extends State<WordLearningPage> {
   }
 
   Future<void> _playAudioFile(String filePath) async {
-    int result = await audioPlayer.play(filePath, isLocal: true);
-    if (result != 1) {
-      throw Exception('Error playing audio');
-    }
-
-    audioPlayer.onPlayerCompletion.listen((event) async {
+    await audioPlayer.play(DeviceFileSource(filePath)); // DeviceFileSource 사용
+    audioPlayer.onPlayerComplete.listen((event) async {
       playCount++;
       if (playCount < 2) {
-        await audioPlayer.play(filePath, isLocal: true);
+        await audioPlayer.play(DeviceFileSource(filePath)); // DeviceFileSource 사용
       } else {
         await Future.delayed(Duration(seconds: 1)); // 팝업을 더 길게 유지
         setState(() {

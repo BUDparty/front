@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "607347737639",
+    "project_id": "onsaemiro-81c01",
+    "storage_bucket": "onsaemiro-81c01.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:607347737639:android:ea7114b7cb6a25bd023a02",
+        "android_client_info": {
+          "package_name": "com.example.onsaemiro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgAz6QgBupwANeFxRZM_rIylSRTApOoFo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

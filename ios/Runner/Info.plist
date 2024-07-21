@@ -51,5 +51,10 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+    <string>We need your microphone permission to recognize speech.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>앱에서 음성 인식을 위해 마이크를 사용합니다.</string>
+
 </dict>
 </plist>

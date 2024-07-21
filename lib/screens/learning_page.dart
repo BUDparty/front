@@ -1,39 +1,43 @@
+// 필요한 패키지들을 임포트합니다.
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
-import 'word_learning_page.dart';
+import 'accent_learning_page.dart';
+import 'evaluation_sentence_page.dart'; // 문장 평가하기 페이지 추가
 import 'sentence_learning_page.dart';
-import 'evaluation_sentence_page.dart'; // Add this line
+import 'word_learning_page.dart';
 
+// LearningPage 클래스는 학습 페이지를 나타내는 StatefulWidget입니다.
 class LearningPage extends StatefulWidget {
   @override
   _LearningPageState createState() => _LearningPageState();
 }
 
+// _LearningPageState 클래스는 LearningPage의 상태를 관리합니다.
 class _LearningPageState extends State<LearningPage> {
-  late Future<List<Chapter>> futureChapters;
+  late Future<List<Chapter>> futureChapters; // 미래의 챕터 리스트를 저장하는 변수입니다.
 
   @override
   void initState() {
     super.initState();
-    futureChapters = ApiService().fetchChapters();
+    futureChapters = ApiService().fetchChapters(); // 챕터 데이터를 가져옵니다.
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('학습하기'),
+        title: Text('학습하기'), // 앱바의 제목을 설정합니다.
       ),
       body: FutureBuilder<List<Chapter>>(
         future: futureChapters,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return Center(child: CircularProgressIndicator()); // 로딩 중일 때 표시되는 위젯입니다.
           } else if (snapshot.hasError) {
-            return Center(child: Text('Failed to load chapters'));
+            return Center(child: Text('Failed to load chapters')); // 오류가 발생했을 때 표시되는 위젯입니다.
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('No chapters available'));
+            return Center(child: Text('No chapters available')); // 데이터가 없을 때 표시되는 위젯입니다.
           } else {
             return ListView.builder(
               itemCount: snapshot.data!.length,
@@ -41,7 +45,7 @@ class _LearningPageState extends State<LearningPage> {
                 Chapter chapter = snapshot.data![index];
                 String imageAsset;
                 if (index % 3 == 0) {
-                  imageAsset = 'assets/images/hi.png';
+                  imageAsset = 'assets/images/hi.png'; // 인덱스에 따라 다른 이미지를 설정합니다.
                 } else if (index % 3 == 1) {
                   imageAsset = 'assets/images/exercising.png';
                 } else {
@@ -53,24 +57,26 @@ class _LearningPageState extends State<LearningPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('챕터 ${chapter.id} : ${chapter.title}', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      Text('챕터 ${chapter.id} : ${chapter.title}', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), // 챕터 제목을 표시합니다.
                       SizedBox(height: 4),
-                      Text('한국의 ${chapter.title}에 대해 배워봅시다.', style: TextStyle(fontSize: 14, color: Colors.grey)),
+                      Text('한국의 ${chapter.title}에 대해 배워봅시다.', style: TextStyle(fontSize: 14, color: Colors.grey)), // 챕터 설명을 표시합니다.
                       SizedBox(height: 8),
+                      // 단어 학습하기로 이동하는 카드입니다.
                       Card(
                         child: ListTile(
-                          leading: Image.asset(imageAsset, width: 50, height: 50),
+                          leading: Image.asset(imageAsset, width: 50, height: 50), // 카드의 이미지입니다.
                           title: Text('유닛 1. 단어 학습하기'),
                           subtitle: Text('${chapter.title}  기본'),
                           trailing: Icon(Icons.arrow_forward_ios),
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => WordLearningPage(chapterId: chapter.id)),
+                              MaterialPageRoute(builder: (context) => WordLearningPage(chapterId: chapter.id)), // WordLearningPage로 이동합니다.
                             );
                           },
                         ),
                       ),
+                      // 문장 학습하기로 이동하는 카드입니다.
                       Card(
                         child: ListTile(
                           leading: Image.asset(imageAsset, width: 50, height: 50),
@@ -80,21 +86,22 @@ class _LearningPageState extends State<LearningPage> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => SentenceLearningPage(chapterId: chapter.id)),
+                              MaterialPageRoute(builder: (context) => SentenceLearningPage(chapterId: chapter.id)), // SentenceLearningPage로 이동합니다.
                             );
                           },
                         ),
                       ),
+                      // 문장 평가하기로 이동하는 카드입니다.
                       Card(
                         child: ListTile(
                           leading: Image.asset(imageAsset, width: 50, height: 50),
-                          title: Text('유닛 3. 문장 평가하기'),
+                          title: Text('유닛 3. 억양 학습하기'),
                           subtitle: Text('${chapter.title}  기본'),
                           trailing: Icon(Icons.arrow_forward_ios),
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => EvaluationSentencePage(chapterId: chapter.id)),
+                              MaterialPageRoute(builder: (context) => AccentLearningPage(chapterId: chapter.id)),
                             );
                           },
                         ),

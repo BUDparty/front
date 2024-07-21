@@ -1,24 +1,26 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'screens/home_page.dart';
-import 'screens/chat_page.dart';
-import 'screens/word_learning_page.dart';
-import 'screens/progress_page.dart';
-import 'screens/library_page.dart';
-import 'screens/settings_page.dart';
-import 'screens/learning_page.dart';
-import 'screens/evaluation_page.dart';
-import 'screens/evaluation_learning_page.dart';
-import 'package:flutter/material.dart';
+import 'package:onsaemiro/services/api_service.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'models/models.dart';
 import 'screens/home_page.dart';
 import 'settings_provider.dart';
 
 
-void main() {
+Future<void> main() async {
+  await dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
+
+
+  try {
+    ApiService apiService = ApiService();
+    Chapter nextChapter = await apiService.fetchNextChapter();
+    print('Next chapter loaded: ${nextChapter.title}');
+  } catch (e) {
+    print('Error in main: $e');
+  }
+
+
 
   runApp(
     ChangeNotifierProvider(
@@ -34,7 +36,7 @@ class MyApp extends StatelessWidget {
     return Consumer<SettingsProvider>(
       builder: (context, settingsProvider, child) {
         return MaterialApp(
-          title: '온새미로',
+          title: '시나브로',
           theme: settingsProvider.isDarkMode ? ThemeData.dark() : ThemeData.light(),
           home: HomePage(),
         );
