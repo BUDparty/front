@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:onsaemiro/services/api_service.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 import 'models/models.dart';
 import 'screens/home_page.dart';
 import 'settings_provider.dart';
 
 
 Future<void> main() async {
-  await dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
 
 
