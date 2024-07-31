@@ -27,18 +27,18 @@ class _WordLearningPageState extends State<WordLearningPage> {
 
   static const String _localBaseUrl = 'http://127.0.0.1:8000/api';
   static const String _androidEmulatorBaseUrl = 'http://10.0.2.2:8000/api';
-  static const String _productionBaseUrl = 'https://your-production-server.com/api';
+  static const String _productionBaseUrl = 'http://35.202.241.53/api';
 
   // 기본 URL을 동적으로 설정합니다.
   static String get baseUrl {
     if (kIsWeb) {
       return _productionBaseUrl;
     } else if (Platform.isAndroid) {
-      return _androidEmulatorBaseUrl;
+      return _productionBaseUrl;
     } else if (Platform.isIOS) {
-      return _localBaseUrl;
+      return _productionBaseUrl;
     } else {
-      return _localBaseUrl;
+      return _productionBaseUrl;
     }
   }
 

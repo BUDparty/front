@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -23,11 +26,31 @@ class MyApp extends StatelessWidget {
 }
 
 class ChatPage extends StatefulWidget {
+
+
   @override
   _ChatPageState createState() => _ChatPageState();
 }
 
 class _ChatPageState extends State<ChatPage> {
+  static const String _localBaseUrl = 'http://127.0.0.1:8000/api';
+  static const String _androidEmulatorBaseUrl = 'http://10.0.2.2:8000/api';
+  static const String _productionBaseUrl = 'http://35.202.241.53/api';
+
+  // 기본 URL을 동적으로 설정합니다.
+  static String get baseUrl {
+    if (kIsWeb) {
+      return _productionBaseUrl;
+    } else if (Platform.isAndroid) {
+      return _productionBaseUrl;
+    } else if (Platform.isIOS) {
+      return _productionBaseUrl;
+    } else {
+      return _productionBaseUrl;
+    }
+  }
+
+
   final TextEditingController _controller = TextEditingController();
   final List<Map<String, String>> _messages = [];
   late final String apiKey;
@@ -35,9 +58,23 @@ class _ChatPageState extends State<ChatPage> {
   @override
   void initState() {
     super.initState();
-    apiKey = dotenv.env['API_KEY']!;
+    fetchApiKey();
+    //apiKey = dotenv.env['API_KEY']!;
     _messages.add({'role': 'bot', 'content': '한국말과 북한말에 대해 궁금한걸 뭐든 물어보세요'});
   }
+
+  Future<void> fetchApiKey() async {
+    final response = await http.get(Uri.parse('$baseUrl/get-api-key/'));
+
+    if (response.statusCode == 200) {
+      setState(() {
+        apiKey = jsonDecode(response.body)['api_key'];
+      });
+    } else {
+      throw Exception('Failed to load API key');
+    }
+  }
+
 
   Future<void> _sendMessage(String message) async {
     setState(() {

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:googleapis_auth/auth_io.dart';
@@ -22,6 +23,25 @@ class TestPage extends StatefulWidget {
 }
 
 class _TestPageState extends State<TestPage> {
+  static const String _localBaseUrl = 'http://127.0.0.1:8000/api';
+  static const String _androidEmulatorBaseUrl = 'http://10.0.2.2:8000/api';
+  static const String _productionBaseUrl = 'http://35.202.241.53/api';
+
+  // 기본 URL을 동적으로 설정합니다.
+  static String get baseUrl {
+    if (kIsWeb) {
+      return _productionBaseUrl;
+    } else if (Platform.isAndroid) {
+      return _productionBaseUrl;
+    } else if (Platform.isIOS) {
+      return _productionBaseUrl;
+    } else {
+      return _productionBaseUrl;
+    }
+  }
+
+
+
   List<String> sentences = [];
   int currentIndex = 0;
   late AudioPlayer audioPlayer;
@@ -31,6 +51,8 @@ class _TestPageState extends State<TestPage> {
   bool isLoading = false;
   String recognizedText = '';
   int playCount = 0;
+  late final String apiKey;
+
 
   @override
   void initState() {
@@ -40,12 +62,26 @@ class _TestPageState extends State<TestPage> {
     _generateNewSentence();
   }
 
+
+  Future<void> fetchApiKey() async {
+    final response = await http.get(Uri.parse('$baseUrl/get-api-key/'));
+
+    if (response.statusCode == 200) {
+      setState(() {
+        apiKey = jsonDecode(response.body)['api_key'];
+      });
+    } else {
+      throw Exception('Failed to load API key');
+    }
+  }
+
+
   Future<void> _generateNewSentence() async {
     setState(() {
       isLoading = true;
     });
-
-    final String apiKey = dotenv.env['API_KEY'] ?? '';
+    fetchApiKey();
+    //final String apiKey = dotenv.env['API_KEY'] ?? '';
 
     List<String> situations = [
       '일상 대화',
