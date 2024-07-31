@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:googleapis_auth/auth_io.dart';
@@ -25,6 +26,26 @@ class AccentLearningPage extends StatefulWidget {
 }
 
 class _AccentLearningPageState extends State<AccentLearningPage> {
+
+  static const String _localBaseUrl = 'http://127.0.0.1:8000/api';
+  static const String _androidEmulatorBaseUrl = 'http://10.0.2.2:8000/api';
+  static const String _productionBaseUrl = 'http://35.202.241.53/api';
+
+  // 기본 URL을 동적으로 설정합니다.
+  static String get baseUrl {
+    if (kIsWeb) {
+      return _productionBaseUrl;
+    } else if (Platform.isAndroid) {
+      return _productionBaseUrl;
+    } else if (Platform.isIOS) {
+      return _productionBaseUrl;
+    } else {
+      return _productionBaseUrl;
+    }
+  }
+
+
+
   late Future<List<AppSentence>> futureSentences;
   late Future<Chapter> futureChapter;
   int currentIndex = 0;
@@ -52,9 +73,19 @@ class _AccentLearningPageState extends State<AccentLearningPage> {
     }
   }
 
+  Future<String> getServiceAccountJson() async {
+    final response = await http.get(Uri.parse('$baseUrl/service-account/'));
+    if (response.statusCode == 200) {
+      return response.body;
+    } else {
+      throw Exception('Failed to load service account');
+    }
+  }
+
+
   Future<AutoRefreshingAuthClient> _getAuthClient() async {
     try {
-      final serviceAccountJson = await rootBundle.loadString('assets/service_account.json');
+      final serviceAccountJson = await getServiceAccountJson();
       final credentials = ServiceAccountCredentials.fromJson(serviceAccountJson);
       final scopes = [tts.TexttospeechApi.cloudPlatformScope];
       return clientViaServiceAccount(credentials, scopes);

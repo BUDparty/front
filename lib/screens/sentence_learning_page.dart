@@ -62,10 +62,21 @@ class _SentenceLearningPageState extends State<SentenceLearningPage> {
     audioPlayer = AudioPlayer(); // 오디오 플레이어 초기화
   }
 
+  Future<String> getServiceAccountJson() async {
+    final response = await http.get(Uri.parse('$baseUrl/service-account/'));
+    if (response.statusCode == 200) {
+      return response.body;
+    } else {
+      throw Exception('Failed to load service account');
+    }
+  }
+
+
+
   Future<AutoRefreshingAuthClient> _getAuthClient() async {
     try {
-      final serviceAccountJson = await rootBundle.loadString('assets/service_account.json');
-      final credentials = ServiceAccountCredentials.fromJson(serviceAccountJson);
+      final serviceAccountJson = await getServiceAccountJson();
+      final credentials = ServiceAccountCredentials.fromJson(json.decode(serviceAccountJson));
       final scopes = [tts.TexttospeechApi.cloudPlatformScope];
       return clientViaServiceAccount(credentials, scopes);
     } catch (e) {
