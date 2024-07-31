@@ -33,13 +33,14 @@ dependencies:
   permission_handler: ^10.0.0
   http: ^0.13.6
   provider: ^5.0.0
-  flutter_dotenv: ^5.1.0
   animated_text_kit: ^4.2.1
   speech_to_text: ^6.6.0
   googleapis_auth: ^1.3.1  # 최신 버전으로 업데이트
   googleapis: ^7.0.0
   audioplayers: ^6.0.0
   path_provider: ^2.0.9
+  flutter_dotenv: ^5.0.2
+  flutter_config: ^2.0.2
 
 
 
@@ -133,6 +134,7 @@ flutter:
     - assets/images/홀딩.png
     - assets/images/후라이팬.png
     - assets/images/훌라후프.png
+    - .env
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:googleapis_auth/auth_io.dart';
@@ -23,6 +24,26 @@ class WordLearningPage extends StatefulWidget {
 }
 
 class _WordLearningPageState extends State<WordLearningPage> {
+
+  static const String _localBaseUrl = 'http://127.0.0.1:8000/api';
+  static const String _androidEmulatorBaseUrl = 'http://10.0.2.2:8000/api';
+  static const String _productionBaseUrl = 'https://your-production-server.com/api';
+
+  // 기본 URL을 동적으로 설정합니다.
+  static String get baseUrl {
+    if (kIsWeb) {
+      return _productionBaseUrl;
+    } else if (Platform.isAndroid) {
+      return _androidEmulatorBaseUrl;
+    } else if (Platform.isIOS) {
+      return _localBaseUrl;
+    } else {
+      return _localBaseUrl;
+    }
+  }
+
+
+
   late Future<List<Word>> futureWords;
   late Future<Chapter> futureChapter;
   int currentIndex = 0;
@@ -102,7 +123,7 @@ class _WordLearningPageState extends State<WordLearningPage> {
   }
 
   Future<void> _saveWord(int wordId) async {
-    final response = await http.post(Uri.parse('http://127.0.0.1:8000/api/words/$wordId/save/'));
+    final response = await http.post(Uri.parse('$baseUrl/words/$wordId/save/'));
 
     if (response.statusCode == 200) {
       setState(() {

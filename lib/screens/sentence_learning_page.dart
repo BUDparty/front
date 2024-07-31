@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:googleapis_auth/auth_io.dart';
@@ -23,6 +24,29 @@ class SentenceLearningPage extends StatefulWidget {
 }
 
 class _SentenceLearningPageState extends State<SentenceLearningPage> {
+
+
+  static const String _localBaseUrl = 'http://127.0.0.1:8000/api';
+  static const String _androidEmulatorBaseUrl = 'http://10.0.2.2:8000/api';
+  static const String _productionBaseUrl = 'https://your-production-server.com/api';
+
+  // 기본 URL을 동적으로 설정합니다.
+  static String get baseUrl {
+    if (kIsWeb) {
+      return _productionBaseUrl;
+    } else if (Platform.isAndroid) {
+      return _androidEmulatorBaseUrl;
+    } else if (Platform.isIOS) {
+      return _localBaseUrl;
+    } else {
+      return _localBaseUrl;
+    }
+  }
+
+
+
+
+
   late Future<List<AppSentence>> futureSentences; // 문장을 받아오기 위한 Future
   late Future<Chapter> futureChapter; // 챕터를 받아오기 위한 Future
   int currentIndex = 0; // 현재 문장의 인덱스
@@ -101,7 +125,12 @@ class _SentenceLearningPageState extends State<SentenceLearningPage> {
   }
 
   Future<void> _saveSentence(int sentenceId) async {
-    final response = await http.post(Uri.parse('http://127.0.0.1:8000/api/sentences/$sentenceId/save/'));
+
+
+
+
+
+    final response = await http.post(Uri.parse('$baseUrl/sentences/$sentenceId/save/'));
 
     if (response.statusCode == 200) {
       setState(() {

@@ -13,6 +13,8 @@ import 'evaluation_sentence_page.dart'; // 문장 평가하기 페이지
 import 'evaluation_learning_result_page.dart';
 import 'evaluation_page.dart';
 import 'learning_page.dart';
+import 'ai_learning.dart'; // TestPage를 임포트합니다.
+
 
 // HomePage 클래스는 앱의 홈 화면을 나타내는 StatefulWidget입니다.
 class HomePage extends StatefulWidget {
@@ -136,33 +138,60 @@ class HomeContent extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: 20),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => TestPage()), // TestPage로 이동합니다.
+                      );
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.teal,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'AI와 학습하기',
+                          style: TextStyle(color: Colors.white, fontSize: 18),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
                   _buildSectionTitle('학습하기'), // 학습하기 섹션 타이틀입니다.
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => SentenceLearningPage(
-                                    chapterId: nextChapter.id)), // SentenceLearningPage로 이동합니다.
-                          );
-                        },
-                        child: _buildLearningCard(nextChapter.title, '문장 학습하기',
-                            'assets/images/sample1.png'),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => SentenceLearningPage(
+                                      chapterId: nextChapter.id)), // SentenceLearningPage로 이동합니다.
+                            );
+                          },
+                          child: _buildLearningCard(nextChapter.title, '문장 학습하기',
+                              'assets/images/sample1.png'),
+                        ),
                       ),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => WordLearningPage(
-                                    chapterId: nextChapter.id)), // WordLearningPage로 이동합니다.
-                          );
-                        },
-                        child: _buildLearningCard(nextChapter.title, '단어 학습하기',
-                            'assets/images/sample1.png'),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => WordLearningPage(
+                                      chapterId: nextChapter.id)), // WordLearningPage로 이동합니다.
+                            );
+                          },
+                          child: _buildLearningCard(nextChapter.title, '단어 학습하기',
+                              'assets/images/sample1.png'),
+                        ),
                       ),
                     ],
                   ),
@@ -193,29 +222,34 @@ class HomeContent extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => EvaluationSentencePage(
-                                    chapterId: nextChapter.id)), // EvaluationSentencePage로 이동합니다.
-                          );
-                        },
-                        child: _buildLearningCard(nextChapter.title, '문장 평가하기',
-                            'assets/images/sample1.png'),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => EvaluationSentencePage(
+                                      chapterId: nextChapter.id)), // EvaluationSentencePage로 이동합니다.
+                            );
+                          },
+                          child: _buildLearningCard(nextChapter.title, '문장 평가하기',
+                              'assets/images/sample1.png'),
+                        ),
                       ),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => EvaluationLearningPage(
-                                    chapterId: nextChapter.id)), // EvaluationLearningPage로 이동합니다.
-                          );
-                        },
-                        child: _buildLearningCard(nextChapter.title, '단어 평가하기',
-                            'assets/images/sample1.png'),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => EvaluationLearningPage(
+                                      chapterId: nextChapter.id)), // EvaluationLearningPage로 이동합니다.
+                            );
+                          },
+                          child: _buildLearningCard(nextChapter.title, '단어 평가하기',
+                              'assets/images/sample1.png'),
+                        ),
                       ),
                     ],
                   ),
@@ -281,25 +315,23 @@ class HomeContent extends StatelessWidget {
 
   // 학습 카드를 빌드하는 함수입니다.
   Widget _buildLearningCard(String chapter, String title, String imagePath) {
-    return Expanded(
-      child: Card(
-        child: Column(
-          children: [
-            Image.asset(imagePath, width: 120, height: 120, fit: BoxFit.cover),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(chapter, style: TextStyle(fontSize: 14)),
-                  SizedBox(height: 4),
-                  Text(title,
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                ],
-              ),
+    return Card(
+      child: Column(
+        children: [
+          Image.asset(imagePath, width: 120, height: 120, fit: BoxFit.cover),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(chapter, style: TextStyle(fontSize: 14)),
+                SizedBox(height: 4),
+                Text(title,
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
