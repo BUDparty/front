@@ -182,7 +182,21 @@ class _SentenceLearningPageState extends State<SentenceLearningPage> {
                                   height: 200,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) {
-                                    return Text('Error loading image', style: TextStyle(color: Colors.red));
+                                    return Container(
+                                      width: double.infinity,
+                                      height: 200,
+                                      color: Colors.grey.shade200,
+                                      child: Center(
+                                        child: Text(
+                                          'No Image',
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    );
                                   },
                                 ),
                                 SizedBox(height: 10),

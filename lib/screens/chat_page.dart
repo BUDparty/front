@@ -4,11 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
-  //await dotenv.load(fileName: ".env"); // 환경 변수를 로드합니다.
   runApp(MyApp());
 }
 
@@ -26,8 +24,6 @@ class MyApp extends StatelessWidget {
 }
 
 class ChatPage extends StatefulWidget {
-
-
   @override
   _ChatPageState createState() => _ChatPageState();
 }
@@ -50,16 +46,14 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-
   final TextEditingController _controller = TextEditingController();
   final List<Map<String, String>> _messages = [];
-  late final String apiKey;
+  late String apiKey;
 
   @override
   void initState() {
     super.initState();
-
-    //apiKey = dotenv.env['API_KEY']!;
+    fetchApiKey();
     _messages.add({'role': 'bot', 'content': '한국말과 북한말에 대해 궁금한걸 뭐든 물어보세요'});
   }
 
@@ -75,13 +69,11 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-
   Future<void> _sendMessage(String message) async {
     setState(() {
       _messages.add({'role': 'user', 'content': message});
     });
 
-    fetchApiKey();
     final response = await http.post(
       Uri.parse('https://api.openai.com/v1/chat/completions'),
       headers: {
@@ -89,7 +81,7 @@ class _ChatPageState extends State<ChatPage> {
         'Authorization': 'Bearer $apiKey',
       },
       body: utf8.encode(jsonEncode({
-        'model': 'gpt-4o',
+        'model': 'gpt-4',
         'messages': [
           {'role': 'system', 'content': '너는 한국말과 북한말에 대한 전문가야. 물어보는 질문에 한국말로 대답해줘.'},
           {'role': 'user', 'content': message},

@@ -131,7 +131,7 @@ class HomeContent extends StatelessWidget {
                       ),
                       child: Center(
                         child: Text(
-                          'AI와 대화하기',
+                          '한국말 AI사전',
                           style: TextStyle(color: Colors.white, fontSize: 18),
                         ),
                       ),

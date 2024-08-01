@@ -219,10 +219,6 @@ class _AccentLearningPageState extends State<AccentLearningPage> {
             children: [
               Text('억양 정확도: ${(score * 100).toStringAsFixed(2)}%'),
               SizedBox(height: 10),
-              Text('Precision: ${(precision * 100).toStringAsFixed(2)}%'),
-              SizedBox(height: 10),
-              Text('Recall: ${(recall * 100).toStringAsFixed(2)}%'),
-              SizedBox(height: 10),
               Text('인식된 내용: $recognizedText'),
             ],
           ),
@@ -289,7 +285,21 @@ class _AccentLearningPageState extends State<AccentLearningPage> {
                                   height: 200,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) {
-                                    return Text('Error loading image', style: TextStyle(color: Colors.red));
+                                    return Container(
+                                      width: double.infinity,
+                                      height: 200,
+                                      color: Colors.grey.shade200,
+                                      child: Center(
+                                        child: Text(
+                                          'No Image',
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    );
                                   },
                                 ),
                                 SizedBox(height: 10),

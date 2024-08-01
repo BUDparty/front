@@ -9,7 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:audioplayers/audioplayers.dart';
 
 void main() async {
- // await dotenv.load(fileName: ".env"); // Load environment variables
+  // await dotenv.load(fileName: ".env"); // Load environment variables
   runApp(MyApp());
 }
 
@@ -258,7 +258,6 @@ class _TestPageState extends State<TestPage> with TickerProviderStateMixin {
             child: ElevatedButton(
               onPressed: isListening ? null : _startListening,
               style: ElevatedButton.styleFrom(
-
                 backgroundColor: isListening ? Colors.grey : Colors.blue,
                 padding: EdgeInsets.symmetric(horizontal: 50, vertical: 20),
                 shape: RoundedRectangleBorder(
@@ -315,7 +314,7 @@ class ConversationSummary extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('User: ${userMessages[index]}', style: TextStyle(fontWeight: FontWeight.bold)),
-                Text('AI: ${botMessages[index]}'),
+                Text('AI: ${botMessages[index]}', style: TextStyle(color: Colors.blue)),
                 SizedBox(height: 10),
               ],
             ),
@@ -325,5 +324,3 @@ class ConversationSummary extends StatelessWidget {
     );
   }
 }
-
-
