@@ -3,8 +3,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:googleapis_auth/auth_io.dart';
-import 'package:googleapis/texttospeech/v1.dart' as tts;
 import 'package:path_provider/path_provider.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -44,8 +42,6 @@ class _AccentLearningPageState extends State<AccentLearningPage> {
     }
   }
 
-
-
   late Future<List<AppSentence>> futureSentences;
   late Future<Chapter> futureChapter;
   int currentIndex = 0;
@@ -73,70 +69,24 @@ class _AccentLearningPageState extends State<AccentLearningPage> {
     }
   }
 
-  Future<String> getServiceAccountJson() async {
-    final response = await http.get(Uri.parse('$baseUrl/service-account/'));
-    if (response.statusCode == 200) {
-      return response.body;
-    } else {
-      throw Exception('Failed to load service account');
-    }
-  }
-
-
-  Future<AutoRefreshingAuthClient> _getAuthClient() async {
-    try {
-      final serviceAccountJson = await getServiceAccountJson();
-      final credentials = ServiceAccountCredentials.fromJson(serviceAccountJson);
-      final scopes = [tts.TexttospeechApi.cloudPlatformScope];
-      return clientViaServiceAccount(credentials, scopes);
-    } catch (e) {
-      print('Error loading service account credentials: $e');
-      rethrow;
-    }
-  }
-
   Future<void> _playTextToSpeech(String text) async {
     try {
-      final authClient = await _getAuthClient();
-      final ttsApi = tts.TexttospeechApi(authClient);
-
-      final input = tts.SynthesizeSpeechRequest(
-        input: tts.SynthesisInput(text: text),
-        voice: tts.VoiceSelectionParams(languageCode: 'ko-KR', name: 'ko-KR-Wavenet-D'),
-        audioConfig: tts.AudioConfig(audioEncoding: 'MP3', speakingRate: 0.9),
-      );
-
-      final response = await ttsApi.text.synthesize(input);
-      final audioContent = base64Decode(response.audioContent!);
-      final tempDir = await getTemporaryDirectory();
-      final tempFile = File('${tempDir.path}/tts.mp3');
-      await tempFile.writeAsBytes(audioContent);
+      final audioUrl = await ApiService.fetchAudioUrl(text);
 
       setState(() {
         isPlaying = true;
-        playCount = 0;
       });
 
-      await _playAudioFile(tempFile.path);
-    } catch (e) {
-      print('Error occurred: $e');
-    }
-  }
+      await audioPlayer.play(UrlSource(audioUrl));  // UrlSource로 URL을 직접 재생
 
-  Future<void> _playAudioFile(String filePath) async {
-    await audioPlayer.play(DeviceFileSource(filePath)); // 반환값을 확인할 필요 없음
-
-    audioPlayer.onPlayerComplete.listen((event) async {
-      playCount++;
-      if (playCount < 2) {
-        await audioPlayer.play(DeviceFileSource(filePath));
-      } else {
-        await Future.delayed(Duration(seconds: 1)); // 팝업을 더 길게 유지
+      audioPlayer.onPlayerComplete.listen((event) async {
         setState(() {
           isPlaying = false;
         });
-      }
-    });
+      });
+    } catch (e) {
+      print('Error occurred: $e');
+    }
   }
 
   Future<void> _stopTextToSpeech() async {
@@ -260,32 +210,32 @@ class _AccentLearningPageState extends State<AccentLearningPage> {
 
   void _showEvaluationPopup(double score, double precision, double recall) {
     showDialog(
-        context: context,
-        builder: (BuildContext context) {
-      return AlertDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
           title: Text('평가 결과'),
-    content: Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-    Text('억양 정확도: ${(score * 100).toStringAsFixed(2)}%'),
-    SizedBox(height: 10),
-    Text('Precision: ${(precision * 100).toStringAsFixed(2)}%'),
-    SizedBox(height: 10),
-    Text('Recall: ${(recall * 100).toStringAsFixed(2)}%'),
-    SizedBox(height: 10),
-    Text('인식된 내용: $recognizedText'),
-    ],
-    ),
-        actions: <Widget>[
-          TextButton(
-            child: Text('닫기'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('억양 정확도: ${(score * 100).toStringAsFixed(2)}%'),
+              SizedBox(height: 10),
+              Text('Precision: ${(precision * 100).toStringAsFixed(2)}%'),
+              SizedBox(height: 10),
+              Text('Recall: ${(recall * 100).toStringAsFixed(2)}%'),
+              SizedBox(height: 10),
+              Text('인식된 내용: $recognizedText'),
+            ],
           ),
-        ],
-      );
-        },
+          actions: <Widget>[
+            TextButton(
+              child: Text('닫기'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 

@@ -3,12 +3,9 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:googleapis_auth/auth_io.dart';
-import 'package:googleapis/texttospeech/v1.dart' as tts;
 import 'package:onsaemiro/screens/sentence_learning_result_page.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:animated_text_kit/animated_text_kit.dart';
 import '../services/api_service.dart';
 import '../models/models.dart';
@@ -24,8 +21,6 @@ class SentenceLearningPage extends StatefulWidget {
 }
 
 class _SentenceLearningPageState extends State<SentenceLearningPage> {
-
-
   static const String _localBaseUrl = 'http://127.0.0.1:8000/api';
   static const String _androidEmulatorBaseUrl = 'http://10.0.2.2:8000/api';
   static const String _productionBaseUrl = 'http://35.202.241.53/api';
@@ -43,10 +38,6 @@ class _SentenceLearningPageState extends State<SentenceLearningPage> {
     }
   }
 
-
-
-
-
   late Future<List<AppSentence>> futureSentences; // 문장을 받아오기 위한 Future
   late Future<Chapter> futureChapter; // 챕터를 받아오기 위한 Future
   int currentIndex = 0; // 현재 문장의 인덱스
@@ -62,72 +53,26 @@ class _SentenceLearningPageState extends State<SentenceLearningPage> {
     audioPlayer = AudioPlayer(); // 오디오 플레이어 초기화
   }
 
-  Future<String> getServiceAccountJson() async {
-    final response = await http.get(Uri.parse('$baseUrl/service-account/'));
-    if (response.statusCode == 200) {
-      return response.body;
-    } else {
-      throw Exception('Failed to load service account');
-    }
-  }
-
-
-
-  Future<AutoRefreshingAuthClient> _getAuthClient() async {
-    try {
-      final serviceAccountJson = await getServiceAccountJson();
-      final credentials = ServiceAccountCredentials.fromJson(json.decode(serviceAccountJson));
-      final scopes = [tts.TexttospeechApi.cloudPlatformScope];
-      return clientViaServiceAccount(credentials, scopes);
-    } catch (e) {
-      print('Error loading service account credentials: $e');
-      rethrow;
-    }
-  }
-
   Future<void> _playTextToSpeech(String text) async {
     try {
-      final authClient = await _getAuthClient();
-      final ttsApi = tts.TexttospeechApi(authClient);
-
-      final input = tts.SynthesizeSpeechRequest(
-        input: tts.SynthesisInput(text: text),
-        voice: tts.VoiceSelectionParams(languageCode: 'ko-KR', name: 'ko-KR-Wavenet-D'),
-        audioConfig: tts.AudioConfig(audioEncoding: 'MP3', speakingRate: 0.9),
-      );
-
-      final response = await ttsApi.text.synthesize(input);
-      final audioContent = base64Decode(response.audioContent!);
-      final tempDir = await getTemporaryDirectory();
-      final tempFile = File('${tempDir.path}/tts.mp3');
-      await tempFile.writeAsBytes(audioContent);
+      final audioUrl = await ApiService.fetchAudioUrl(text);
 
       setState(() {
         isPlaying = true;
-        playCount = 0;
       });
 
-      await _playAudioFile(tempFile.path);
+      await audioPlayer.play(UrlSource(audioUrl));  // UrlSource로 URL을 직접 재생
+
+      audioPlayer.onPlayerComplete.listen((event) async {
+        setState(() {
+          isPlaying = false;
+        });
+      });
     } catch (e) {
       print('Error occurred: $e');
     }
   }
 
-  Future<void> _playAudioFile(String filePath) async {
-    await audioPlayer.play(DeviceFileSource(filePath)); // No need to check result
-
-    audioPlayer.onPlayerComplete.listen((event) async {
-      playCount++;
-      if (playCount < 2) {
-        await audioPlayer.play(DeviceFileSource(filePath));
-      } else {
-        await Future.delayed(Duration(seconds: 1)); // 팝업을 더 길게 유지
-        setState(() {
-          isPlaying = false;
-        });
-      }
-    });
-  }
   Future<void> _stopTextToSpeech() async {
     await audioPlayer.stop();
     setState(() {
@@ -136,11 +81,6 @@ class _SentenceLearningPageState extends State<SentenceLearningPage> {
   }
 
   Future<void> _saveSentence(int sentenceId) async {
-
-
-
-
-
     final response = await http.post(Uri.parse('$baseUrl/sentences/$sentenceId/save/'));
 
     if (response.statusCode == 200) {

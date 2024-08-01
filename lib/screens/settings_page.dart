@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../settings_provider.dart';
-import 'ai_learning.dart'; // TestPage import
+import 'test_page.dart'; // TestPage import
 
 class SettingsPage extends StatefulWidget {
   @override
@@ -33,11 +33,14 @@ class _SettingsPageState extends State<SettingsPage> {
             subtitle: Text('1.0.0'),
           ),
           ListTile(
-            title: Text('Test'),
+            title: Text('Test Page'),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => TestPage()),
+                MaterialPageRoute(
+                  builder: (context) => TestPage(// TestPage에 전달할 메시지 목록을 추가합니다.
+                  ),
+                ),
               );
             },
           ),
@@ -46,4 +49,3 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 }
-

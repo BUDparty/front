@@ -4,8 +4,6 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:googleapis_auth/auth_io.dart';
-import 'package:googleapis/texttospeech/v1.dart' as tts;
 import 'package:path_provider/path_provider.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -17,12 +15,12 @@ import '../models/models.dart';
 import 'rouge_l.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-class TestPage extends StatefulWidget {
+class AiLearningPage extends StatefulWidget {
   @override
-  _TestPageState createState() => _TestPageState();
+  _AiLearningPageState createState() => _AiLearningPageState();
 }
 
-class _TestPageState extends State<TestPage> {
+class _AiLearningPageState extends State<AiLearningPage> {
   static const String _localBaseUrl = 'http://127.0.0.1:8000/api';
   static const String _androidEmulatorBaseUrl = 'http://10.0.2.2:8000/api';
   static const String _productionBaseUrl = 'http://35.202.241.53/api';
@@ -40,8 +38,6 @@ class _TestPageState extends State<TestPage> {
     }
   }
 
-
-
   List<String> sentences = [];
   int currentIndex = 0;
   late AudioPlayer audioPlayer;
@@ -51,17 +47,20 @@ class _TestPageState extends State<TestPage> {
   bool isLoading = false;
   String recognizedText = '';
   int playCount = 0;
-  late final String apiKey;
-
+  late String apiKey;
 
   @override
   void initState() {
     super.initState();
     audioPlayer = AudioPlayer();
     _speech = stt.SpeechToText();
-    _generateNewSentence();
+    _initialize();
   }
 
+  Future<void> _initialize() async {
+    await fetchApiKey();
+    _generateNewSentence();
+  }
 
   Future<void> fetchApiKey() async {
     final response = await http.get(Uri.parse('$baseUrl/get-api-key/'));
@@ -75,13 +74,14 @@ class _TestPageState extends State<TestPage> {
     }
   }
 
-
   Future<void> _generateNewSentence() async {
     setState(() {
       isLoading = true;
     });
-    fetchApiKey();
-    //final String apiKey = dotenv.env['API_KEY'] ?? '';
+
+    if (apiKey.isEmpty) {
+      await fetchApiKey();
+    }
 
     List<String> situations = [
       '일상 대화',
@@ -109,7 +109,7 @@ class _TestPageState extends State<TestPage> {
         'messages': [
           {
             'role': 'system',
-            'content': '다음 상황에 맞는 자연스러운 한국어 문장을 길지 않게 하나 생성하세요. 질문이 아닌 대화중 일부를 생성하세요.: $selectedSituation'
+            'content': '다음 상황에 맞는 자연스러운 한국어 문장을 30자 이내로 하나 생성하세요. 질문이 아닌 대화중 일부를 생성하세요.: $selectedSituation'
           },
         ],
       })),
@@ -130,70 +130,34 @@ class _TestPageState extends State<TestPage> {
     }
   }
 
-  Future<String> getServiceAccountJson() async {
-    final response = await http.get(Uri.parse('$baseUrl/service-account/'));
-    if (response.statusCode == 200) {
-      return response.body;
-    } else {
-      throw Exception('Failed to load service account');
-    }
-  }
-
-
-  Future<AutoRefreshingAuthClient> _getAuthClient() async {
-    try {
-      final serviceAccountJson = await getServiceAccountJson();
-      final credentials = ServiceAccountCredentials.fromJson(serviceAccountJson);
-      final scopes = [tts.TexttospeechApi.cloudPlatformScope];
-      return clientViaServiceAccount(credentials, scopes);
-    } catch (e) {
-      print('Error loading service account credentials: $e');
-      rethrow;
-    }
-  }
-
   Future<void> _playTextToSpeech(String text) async {
     try {
-      final authClient = await _getAuthClient();
-      final ttsApi = tts.TexttospeechApi(authClient);
+      await _checkPermissions();
 
-      final input = tts.SynthesizeSpeechRequest(
-        input: tts.SynthesisInput(text: text),
-        voice: tts.VoiceSelectionParams(languageCode: 'ko-KR', name: 'ko-KR-Wavenet-D'),
-        audioConfig: tts.AudioConfig(audioEncoding: 'MP3', speakingRate: 0.9),
-      );
-
-      final response = await ttsApi.text.synthesize(input);
-      final audioContent = base64Decode(response.audioContent!);
-      final tempDir = await getTemporaryDirectory();
-      final tempFile = File('${tempDir.path}/tts.mp3');
-      await tempFile.writeAsBytes(audioContent);
+      // API를 호출하여 음성 URL을 가져옵니다.
+      final audioUrl = await ApiService.fetchAudioUrl(text);
 
       setState(() {
         isPlaying = true;
         playCount = 0;
       });
 
-      await _playAudioFile(tempFile.path);
+      await audioPlayer.play(UrlSource(audioUrl));  // UrlSource로 URL을 직접 재생
+
+      audioPlayer.onPlayerComplete.listen((event) async {
+        playCount++;
+        if (playCount < 1) {
+          await audioPlayer.play(UrlSource(audioUrl));  // UrlSource로 URL을 직접 재생
+        } else {
+          await Future.delayed(Duration(seconds: 1));
+          setState(() {
+            isPlaying = false;
+          });
+        }
+      });
     } catch (e) {
       print('Error occurred: $e');
     }
-  }
-
-  Future<void> _playAudioFile(String filePath) async {
-    await audioPlayer.play(DeviceFileSource(filePath));
-
-    audioPlayer.onPlayerComplete.listen((event) async {
-      playCount++;
-      if (playCount < 1) {
-        await audioPlayer.play(DeviceFileSource(filePath));
-      } else {
-        await Future.delayed(Duration(seconds: 1));
-        setState(() {
-          isPlaying = false;
-        });
-      }
-    });
   }
 
   Future<void> _stopTextToSpeech() async {

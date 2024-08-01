@@ -142,7 +142,7 @@ class HomeContent extends StatelessWidget {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => TestPage()), // TestPage로 이동합니다.
+                        MaterialPageRoute(builder: (context) => AiLearningPage()), // TestPage로 이동합니다.
                       );
                     },
                     child: Container(

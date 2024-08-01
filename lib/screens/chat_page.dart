@@ -58,7 +58,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   void initState() {
     super.initState();
-    fetchApiKey();
+
     //apiKey = dotenv.env['API_KEY']!;
     _messages.add({'role': 'bot', 'content': '한국말과 북한말에 대해 궁금한걸 뭐든 물어보세요'});
   }
@@ -81,6 +81,7 @@ class _ChatPageState extends State<ChatPage> {
       _messages.add({'role': 'user', 'content': message});
     });
 
+    fetchApiKey();
     final response = await http.post(
       Uri.parse('https://api.openai.com/v1/chat/completions'),
       headers: {
