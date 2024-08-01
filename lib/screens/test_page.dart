@@ -9,7 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:audioplayers/audioplayers.dart';
 
 void main() async {
-  await dotenv.load(fileName: ".env"); // Load environment variables
+ // await dotenv.load(fileName: ".env"); // Load environment variables
   runApp(MyApp());
 }
 
