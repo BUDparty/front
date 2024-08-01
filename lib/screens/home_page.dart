@@ -131,7 +131,7 @@ class HomeContent extends StatelessWidget {
                       ),
                       child: Center(
                         child: Text(
-                          '한국말 AI사전',
+                          '한국어 AI사전',
                           style: TextStyle(color: Colors.white, fontSize: 18),
                         ),
                       ),
@@ -153,7 +153,7 @@ class HomeContent extends StatelessWidget {
                       ),
                       child: Center(
                         child: Text(
-                          'AI와 학습하기',
+                          '인공지능으로 학습하기',
                           style: TextStyle(color: Colors.white, fontSize: 18),
                         ),
                       ),

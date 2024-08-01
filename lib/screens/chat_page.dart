@@ -1,10 +1,8 @@
 import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   runApp(MyApp());
@@ -29,11 +27,8 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  static const String _localBaseUrl = 'http://127.0.0.1:8000/api';
-  static const String _androidEmulatorBaseUrl = 'http://10.0.2.2:8000/api';
   static const String _productionBaseUrl = 'http://35.202.241.53/api';
 
-  // 기본 URL을 동적으로 설정합니다.
   static String get baseUrl {
     if (kIsWeb) {
       return _productionBaseUrl;
@@ -49,6 +44,8 @@ class _ChatPageState extends State<ChatPage> {
   final TextEditingController _controller = TextEditingController();
   final List<Map<String, String>> _messages = [];
   late String apiKey;
+  String _threadId = 'thread_y13Gs47cjDtmvkmVqmVmdgCT'; // 이미 생성된 스레드 ID를 사용
+  String _response = '';
 
   @override
   void initState() {
@@ -63,6 +60,7 @@ class _ChatPageState extends State<ChatPage> {
     if (response.statusCode == 200) {
       setState(() {
         apiKey = jsonDecode(response.body)['api_key'];
+        print('API Key fetched: $apiKey');  // API 키 로그
       });
     } else {
       throw Exception('Failed to load API key');
@@ -70,37 +68,25 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> _sendMessage(String message) async {
-    setState(() {
-      _messages.add({'role': 'user', 'content': message});
-    });
-
     final response = await http.post(
-      Uri.parse('https://api.openai.com/v1/chat/completions'),
+      Uri.parse('$baseUrl/chat-with-assistant/'),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': 'Bearer $apiKey',
       },
-      body: utf8.encode(jsonEncode({
-        'model': 'gpt-4',
-        'messages': [
-          {'role': 'system', 'content': '너는 한국말과 북한말에 대한 전문가야. 물어보는 질문에 한국말로 대답해줘.'},
-          {'role': 'user', 'content': message},
-        ],
-      })),
+      body: jsonEncode({
+        'message': message,
+      }),
     );
 
     if (response.statusCode == 200) {
       final responseBody = jsonDecode(utf8.decode(response.bodyBytes));
       setState(() {
-        _messages.add({'role': 'bot', 'content': responseBody['choices'][0]['message']['content']});
+        _messages.add({'role': 'user', 'content': message});
+        _messages.add({'role': 'bot', 'content': responseBody['response']});
       });
     } else {
-      final responseBody = jsonDecode(utf8.decode(response.bodyBytes));
       setState(() {
-        _messages.add({
-          'role': 'bot',
-          'content': 'Error: ${responseBody['error']['message']}\nPlease check your quota at: https://platform.openai.com/account/usage'
-        });
+        _messages.add({'role': 'bot', 'content': 'Error: Unable to send message.'});
       });
     }
   }
@@ -153,6 +139,9 @@ class _ChatPageState extends State<ChatPage> {
                   icon: Icon(Icons.send),
                   onPressed: () {
                     if (_controller.text.isNotEmpty) {
+                      setState(() {
+                        _messages.add({'role': 'user', 'content': _controller.text});
+                      });
                       _sendMessage(_controller.text);
                       _controller.clear();
                     }
