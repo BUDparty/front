@@ -9,7 +9,7 @@ import 'settings_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env"); // 환경 변수를 로드합니다.
+  // await dotenv.load(fileName: ".env"); // 환경 변수를 로드합니다.
 
   try {
     ApiService apiService = ApiService();
